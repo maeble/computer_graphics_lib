@@ -102,7 +102,7 @@ mat ; test
 
 (defn get-data-dict [mat row col]
   (try {:row row :col col :val (get-cell mat row col)}
-(catch Exception _ nil)))
+       (catch Exception _ nil)))
 ;; TESTS
 (get-data-dict mat 0 0) ; dict
 (get-data-dict mat -1 0) ; nil
@@ -128,7 +128,8 @@ mat ; test
                     [6 7 8]])
 (get-neighbours neighbourmap 1 1) ; valid: all
 (get-neighbours neighbourmap 0 0) ; valid: 5,7,8
-  
+
+(def neighb-keys (list :1 :2 :3 :4 :5 :6 :7 :8))
 
 (defn get-neighbour-of
   "Returns the data-dictionary {row, column, value} of a neighbor at a specific position.
@@ -146,18 +147,60 @@ mat ; test
 (get-neighbour-of neighbourmap 1 1 :8) ; :val=8
 (get-neighbour-of neighbourmap 0 0 :1) ; nil
 
-;; TODO for each neighbour call action and continue
-(defn for-each-neighbour [mat row col action]
-  if (cell-exists? mat row col)
-  ((seq (get-neighbours mat row col))
-   nil))
+;; ;; TODO for each neighbour call action and continue
+;; (defn for-each-neighbour [mat row col action]
+;;   if (cell-exists? mat row col)
+;;   ((seq (get-neighbours mat row col))
+;;    nil))
 
-;; TODO iterate over all 8 neighbours; 1-exists? 2-on fire? 2a-if yes, add on fire +1, else go on with next index
-(defn neighbours-on-fire? [mat row col]
-  (()
-   "TODO if cell does not exist"))
+
+(defn neighbour-on-fire? 
+  "Returns true if the neighbour cell of the given key is on fire."
+  [mat row col neighb]
+  (if (nil? ((get-neighbours mat row col) neighb))
+    false
+    (= (((get-neighbours mat row col) neighb) :val) fire)))
 ;; TESTS
-(neighbours-on-fire? mat 2 2)
+(neighbour-on-fire? mat 0 0 :5) ; F
+(neighbour-on-fire? mat 0 0 :8) ; T
+(neighbour-on-fire? mat 0 0 :1) ; does not exist; F
+
+
+(defn get-next-index 
+  "Iterates row by row and left to right over the map."
+  [mat row col]
+  (if (cell-exists? mat row (+ col 1))
+    (get-data-dict mat row (+ col 1)) 
+    (if (cell-exists? mat (+ row 1) 0)
+      (get-data-dict mat (+ row 1) 0) 
+      nil))) 
+;; TESTS
+(get-next-index mat 0 0) ; mat 0 1
+(get-next-index mat 0 2) ; mat 1 0
+(get-next-index mat 2 2) ; nil
+
+
+(defn neighbours-on-fire?
+ "Returns the number of fires in the neighbour cells.
+  It also works for indices out of scope. This may be useful for algorithms that extend the map/texture area." 
+  [mat row col]
+  (if (contains-fire? mat)
+   (loop [i 0, fire-sum 0]
+     (if (neighbour-on-fire? mat row col (nth neighb-keys i))
+       (if (< i 7)
+         (recur (inc i) (inc fire-sum))
+         fire-sum)
+       (if (< i 7)
+         (recur (inc i) fire-sum)
+         fire-sum)))
+    0))
+;; TESTS
+(def test-mat [[1 1 1]
+               [1 0 2]
+               [1 2 0]])
+(neighbours-on-fire? test-mat -1 1) ; 2
+(neighbours-on-fire? test-mat 2 2) ; 0
+(neighbours-on-fire? test-mat 1 1) ; 5
 
 
 
@@ -168,3 +211,4 @@ mat ; test
 
 ;; non-pure because of random|probabilistic behaviour
 ;; (defn forest-fire [input_matrix, forest-probability, fire-probability] ())
+
