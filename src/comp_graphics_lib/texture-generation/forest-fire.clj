@@ -13,7 +13,6 @@
 ;; -> 2|1 -> 1|0
 ;; -> 0|1 -> 0|0
 
-
 ;; configurations ========================================
 
 (def fire-probability 0.005)
@@ -33,22 +32,22 @@ mat ; test
 (defn burn?
   "Returns true if the cell should start burning.
    Returns false otherwise."
-  [cell]
+  [cell probability]
   (if (= cell tree)
-    (> fire-probability (rand))
+    (> probability (rand))
     false))
 ;; TESTS
-(burn? 2) ; test
+(burn? 2 fire-probability) ; test
 
 (defn grow?
   "Returns true if the cell should grow a tree.
    Returns false otherwise."
-  [cell]
+  [cell probability]
   (if (= cell barren)
-    (> forest-probability (rand))
+    (> probability (rand))
     false))
 ;; TESTS
-(grow? 0) ; test 
+(grow? 0 forest-probability) ; test 
 
 (defn cell-exists?
   "Returns true if the cell index exists in the map matrix.
@@ -196,13 +195,26 @@ mat ; test
 (neighbours-on-fire? test-mat 2 2) ; 0
 (neighbours-on-fire? test-mat 1 1) ; 5
 
-
+;; 0 -> 0 or 2
+;; 1 -> 0
+;; 2 -> 2 or 1
+(defn transform-cell 
+  "Returns the value of the cell of the next map iteration"
+  [mat row col]
+  (if (= (get-cell mat row col) 1)
+    barren
+    (if (burn? (get-cell mat row col) fire-probability)
+      fire
+      (if (grow? (get-cell mat row col) forest-probability)
+        tree
+        (get-cell mat row col)))))
 
 ;; TODO meta goal
 ;; # pure function
 (defn deterministic-forest-fire [mat]
   ())
 
+;; TODO meta goal
 ;; non-pure because of random|probabilistic behaviour
-;; (defn forest-fire [input_matrix, forest-probability, fire-probability] ())
+(defn forest-fire [input_matrix, forest-probability, fire-probability] ())
 
