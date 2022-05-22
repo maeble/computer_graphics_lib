@@ -90,7 +90,7 @@ mat ; test
      (if (contains? mat row)
        (if (.contains (nth mat row) fire)
          true
-         (_contains-fire? mat (+ row 1)))
+         (_contains-fire? mat (inc row)))
        false))
    mat 0))
 ;; TESTS
@@ -114,14 +114,14 @@ mat ; test
    4 x 5
    6 7 8"
   [mat row col]
-  {:1 (get-data-dict mat (- row 1) (- col 1))
-   :2 (get-data-dict mat (- row 1) col)
-   :3 (get-data-dict mat (- row 1) (+ col 1))
-   :4 (get-data-dict mat row (- col 1))
-   :5 (get-data-dict mat row (+ col 1))
-   :6 (get-data-dict mat (+ row 1) (- col 1))
-   :7 (get-data-dict mat (+ row 1) col)
-   :8 (get-data-dict mat (+ row 1) (+ col 1))})
+  {:1 (get-data-dict mat (dec row) (dec col))
+   :2 (get-data-dict mat (dec row) col)
+   :3 (get-data-dict mat (dec row) (inc col))
+   :4 (get-data-dict mat row (dec col))
+   :5 (get-data-dict mat row (inc col))
+   :6 (get-data-dict mat (inc row) (dec col))
+   :7 (get-data-dict mat (inc row) col)
+   :8 (get-data-dict mat (inc row) (inc col))})
 ;; TESTS
 (def neighbourmap  [[1 2 3]
                     [4 0 5]
@@ -147,12 +147,6 @@ mat ; test
 (get-neighbour-of neighbourmap 1 1 :8) ; :val=8
 (get-neighbour-of neighbourmap 0 0 :1) ; nil
 
-;; ;; TODO for each neighbour call action and continue
-;; (defn for-each-neighbour [mat row col action]
-;;   if (cell-exists? mat row col)
-;;   ((seq (get-neighbours mat row col))
-;;    nil))
-
 
 (defn neighbour-on-fire? 
   "Returns true if the neighbour cell of the given key is on fire."
@@ -169,10 +163,10 @@ mat ; test
 (defn get-next-index 
   "Iterates row by row and left to right over the map."
   [mat row col]
-  (if (cell-exists? mat row (+ col 1))
-    (get-data-dict mat row (+ col 1)) 
-    (if (cell-exists? mat (+ row 1) 0)
-      (get-data-dict mat (+ row 1) 0) 
+  (if (cell-exists? mat row (inc col))
+    (get-data-dict mat row (inc col)) 
+    (if (cell-exists? mat (inc row) 0)
+      (get-data-dict mat (inc row) 0) 
       nil))) 
 ;; TESTS
 (get-next-index mat 0 0) ; mat 0 1
