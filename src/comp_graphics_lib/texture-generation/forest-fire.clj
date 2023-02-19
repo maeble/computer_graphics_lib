@@ -55,10 +55,6 @@
 
 (defn on-fire? [cell]
   (= cell fire))
-;; TESTS
-(on-fire? 0) ; F
-(on-fire? 1) ; T
-(on-fire? 2) ; F
 
 ;; # Clj can use java functions with .javaFuncName 
 ;; # uses recursive anonymous function; termination conition = invalid row index
@@ -73,12 +69,6 @@
          (_contains-fire? mat (inc row)))
        false))
    mat 0))
-;; TESTS
-(contains-fire? mat) ; T
-(contains-fire? [[0 1 0]]) ; T
-(contains-fire? [[]]) ; F
-(contains-fire? [[0 0 0]
-                 [0 0 2]]) ; F
 
 (defn neighbour-on-fire? 
   "Returns true if the neighbour cell of the given key is on fire."
@@ -86,21 +76,12 @@
   (if (nil? ((map-utils/get-neighbours mat row col) neighb))
     false
     (= (((map-utils/get-neighbours mat row col) neighb) :val) fire)))
-;; TESTS
-(neighbour-on-fire? mat 0 0 :5) ; F
-(neighbour-on-fire? mat 0 0 :8) ; T
-(neighbour-on-fire? mat 0 0 :1) ; does not exist; F
 
 (defn has-next-index?
   "Returns true if get-next-index can find a next cell"
   [mat row col] 
   (not (nil? (map-utils/get-next-index mat row col))
   ))
-;; TESTS
-(has-next-index? mat 0 0) ; true
-(has-next-index? mat 1 2) ; true
-(has-next-index? mat 2 2) ; false
-
 
 (defn how-many-neighbours-on-fire?
  "Returns the number of fires in the neighbour cells.
@@ -116,13 +97,6 @@
          (recur (inc i) fire-sum)
          fire-sum)))
     0))
-;; TESTS
-(def test-mat [[1 1 1]
-               [1 0 2]
-               [1 2 0]])
-(how-many-neighbours-on-fire? test-mat -1 1) ; 2
-(how-many-neighbours-on-fire? test-mat 2 2) ; 0
-(how-many-neighbours-on-fire? test-mat 1 1) ; 5
 
 ;; 0 -> 0 or 2
 ;; 1 -> 0
@@ -138,19 +112,12 @@
         tree ; else if probably start to grow (if barren inclusive)
         (map-utils/get-cell mat row col)))) ; else just stay the same
   ) 
-;; TESTS
-(next-cell-value test-mat 0 0) ; 0
-(next-cell-value test-mat 1 1) ; 0 or 2
-(next-cell-value test-mat 2 1) ; 1 or 2
-
 
 (defn transform-cell-in-mat
   "Transformes one cell in the given matrix"
   [mat row col] 
   (assoc mat row (assoc (-> mat (nth row)) col (next-cell-value mat row col)))
   ) ; assoc=replace vector index new_val
-;; TESTS
-(transform-cell-in-mat test-mat 0 0) ; [0 1 1] [1 0 2] [1 2 0]
 
 ;; (defn transform-mat
 ;;   [mat]
@@ -170,7 +137,7 @@
                 ((map-utils/get-next-index mat row col) :row) ;; next row
                 ((map-utils/get-next-index mat row col) :col)) ;; next col) 
          (transform-cell-in-mat mat row col);; last cell
-                )
+         )
   ))
 
 (defn forest-fire-one-round 
@@ -189,8 +156,6 @@
    [2 0 0 2 2 2 2 2 2 2]
    [2 2 0 2 2 2 1 2 2 2]
    [2 2 2 2 2 2 2 2 2 2]])
-(forest-fire-one-round test-mat) ; [[0 0 0] [0 0/2 2] [0 2 0/2]]
-(forest-fire-one-round big-test-mat)
 
 
 ;; TODO meta goal
