@@ -22,14 +22,9 @@
 
 ;; configurations ========================================
 
-(def fire-probability 0.05)
-(def forest-probability 0.1)
 (def tree 2)
 (def fire 1)
 (def barren 0)
-(def mat [[tree tree tree] 
-          [tree fire tree]
-          [tree barren tree]])
 
 ;; code ==================================================
 
@@ -40,8 +35,6 @@
   (if (= cell tree)
     (> probability (rand))
     false))
-;; TESTS
-(burn? 2 fire-probability) ; test
 
 (defn grow?
   "Returns true if the cell should grow a tree.
@@ -50,8 +43,6 @@
   (if (= cell barren)
     (> probability (rand))
     false))
-;; TESTS
-(grow? 0 forest-probability) ; test 
 
 (defn on-fire? [cell]
   (= cell fire))
@@ -77,12 +68,6 @@
     false
     (= (((map-utils/get-neighbours mat row col) neighb) :val) fire)))
 
-(defn has-next-index?
-  "Returns true if get-next-index can find a next cell"
-  [mat row col] 
-  (not (nil? (map-utils/get-next-index mat row col))
-  ))
-
 (defn how-many-neighbours-on-fire?
  "Returns the number of fires in the neighbour cells.
   It also works for indices out of scope. This may be useful for algorithms that extend the map/texture area." 
@@ -103,20 +88,20 @@
 ;; 2 -> 2 or 1
 (defn next-cell-value 
   "Returns the value of the cell of the next map iteration"
-  [mat row col]
+  [mat row col  forest-prob fire-prob]
   (if (= (map-utils/get-cell mat row col) fire)
     barren ; if burning then barren
-    (if (burn? (map-utils/get-cell mat row col) fire-probability)
+    (if (burn? (map-utils/get-cell mat row col) fire-prob)
       fire ; else if probably start to burn (if tree inclusive)
-      (if (grow? (map-utils/get-cell mat row col) forest-probability)
+      (if (grow? (map-utils/get-cell mat row col) forest-prob)
         tree ; else if probably start to grow (if barren inclusive)
         (map-utils/get-cell mat row col)))) ; else just stay the same
   ) 
 
 (defn transform-cell-in-mat
   "Transformes one cell in the given matrix"
-  [mat row col] 
-  (assoc mat row (assoc (-> mat (nth row)) col (next-cell-value mat row col)))
+  [mat row col forest-prob fire-prob] 
+  (assoc mat row (assoc (-> mat (nth row)) col (next-cell-value mat row col forest-prob fire-prob)))
   ) ; assoc=replace vector index new_val
 
 ;; (defn transform-mat
@@ -128,45 +113,40 @@
 ; better recursive
 
 (defn transform-mat-recur
-  [matrix first_row first_col]
+  [matrix first-row first-col forest-prob fire-prob]
   (loop [mat matrix 
-         row first_row 
-         col first_col]
+         row first-row 
+         col first-col]
        (if (has-next-index? mat row col)
-         (recur (transform-cell-in-mat mat row col) ;; transform current cell and get new mat
+         (recur (transform-cell-in-mat mat row col forest-prob fire-prob) ;; transform current cell and get new mat
                 ((map-utils/get-next-index mat row col) :row) ;; next row
                 ((map-utils/get-next-index mat row col) :col)) ;; next col) 
-         (transform-cell-in-mat mat row col);; last cell
+         (transform-cell-in-mat mat row col forest-prob fire-prob);; last cell
          )
   ))
 
 (defn forest-fire-one-round 
-  [matrix]
-  (transform-mat-recur matrix 0 0))
+  [matrix forest-probability fire-probability]
+  (transform-mat-recur matrix 0 0 forest-probability fire-probability))
 
-;; TESTS
-(def big-test-mat
-  [[2 2 2 2 2 2 2 2 2 2]
-   [2 2 1 2 2 2 2 2 2 2]
-   [2 2 2 2 2 2 2 0 2 2]
-   [2 0 0 2 2 2 2 2 2 2]
-   [2 0 0 2 2 2 2 2 2 2]
-   [2 2 2 2 1 2 2 2 2 2]
-   [2 2 2 2 2 2 2 2 2 2]
-   [2 0 0 2 2 2 2 2 2 2]
-   [2 2 0 2 2 2 1 2 2 2]
-   [2 2 2 2 2 2 2 2 2 2]])
-
+;; non-pure because of random|probabilistic behaviour
+;; TODO and always wrap deterministic function with probabilistic behaviour function
+(defn run-forest-fire-main
+  [matrix, forest-probability, fire-probability, number-of-rounds]
+  (loop [mat matrix
+         forest-prob forest-probability
+         fire-prob fire-probability
+         rounds number-of-rounds]
+    (let [next-mat (forest-fire-one-round mat forest-prob fire-prob)]
+      (if (> rounds 1)
+        (do (println rounds)
+            (println next-mat) ;; if true (recur)
+            (recur next-mat forest-prob fire-prob (dec rounds)))
+        (do (println rounds)
+            (forest-fire-one-round mat forest-prob fire-prob)) ;; if false (last round) 
+        ))))
 
 ;; TODO meta goal
 ;; # pure function
 (defn deterministic-forest-fire [mat]
   ())
-
-;; TODO meta goal
-;; non-pure because of random|probabilistic behaviour
-(defn run-forest-fire 
-  [matrix, forest-probability, fire-probability, number-of-rounds] 
-  ()
-  )
-

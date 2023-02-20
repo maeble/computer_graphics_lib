@@ -55,3 +55,8 @@
     (if (cell-exists? mat (inc row) 0)
       (get-data-dict mat (inc row) 0)
       nil)))
+
+(defn has-next-index?
+  "Returns true if get-next-index can find a next cell"
+  [mat row col]
+  (not (nil? (get-next-index mat row col))))
