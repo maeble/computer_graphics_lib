@@ -15,7 +15,9 @@
 
 (ns comp-graphics-lib.texture-generation.forest-fire
   (:require
-    [comp-graphics-lib.texture-generation.map-utils :as map-utils])
+   [comp-graphics-lib.texture-generation.map-utils :as map-utils]
+   [clojure.core.match :as match]
+   ) 
   (:import )
   )
 
@@ -98,6 +100,22 @@
         (map-utils/get-cell mat row col)))) ; else just stay the same
   ) 
 
+;; TODO testme
+;; pattern matching
+(defn next-cell-value'
+  "Returns the value of the cell of the next map iteration"
+  [mat row col  forest-prob fire-prob]
+  (let [cell (map-utils/get-cell mat row col)]
+    (match/match [cell]
+      [fire] barren
+      [barren] (if (grow? cell forest-prob)
+               tree  ; eventually grow tree
+               cell) ; else just stay the same
+      [tree] (if (burn? cell fire-prob)
+               fire ; eventually enflame
+               cell) ; else just stay the same
+    )))
+
 (defn transform-cell-in-mat
   "Transformes one cell in the given matrix"
   [mat row col forest-prob fire-prob] 
@@ -145,6 +163,13 @@
         (do (println rounds)
             (forest-fire-one-round mat forest-prob fire-prob)) ;; if false (last round) 
         ))))
+
+(defn get-new-random-map [rows, cols, forest-weight, fire-weight, barren-weight]
+  (map-utils/generate-random-map rows cols 
+                                 {tree forest-weight, 
+                                  fire fire-weight,
+                                  barren barren-weight
+                                  }))
 
 ;; TODO meta goal
 ;; # pure function

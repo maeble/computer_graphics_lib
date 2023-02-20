@@ -60,3 +60,29 @@
   "Returns true if get-next-index can find a next cell"
   [mat row col]
   (not (nil? (get-next-index mat row col))))
+
+
+(defn weigted-random [distribution-map]
+  (let [weights (vals distribution-map)
+        total-weight (reduce + weights)
+        r (rand total-weight)]
+    (loop [i 0,
+           sum 0]
+      (if (< r (+ (get (vec weights) i) sum))
+        (get (vec (keys distribution-map)) i)
+        (recur (inc i) (+ (get (vec weights) i) sum))))))
+
+
+(defmacro repeatedly' [n & body]
+  `(repeatedly ~n (fn [] ~@body)))
+
+
+(defn generate-random-map 
+  "Generates a random-weighted texture map based on the distribution map. 
+   The distribution map defines for each possible cell value a distribution weight.
+   The smaller the weight compared to the total weight of all possible cell values, 
+   the rarer the value on the result map."
+  [rows, cols, distribution-map] 
+  (vec (repeatedly' rows (vec (repeatedly' cols (weigted-random distribution-map))))) 
+  )
+;; Note: macro needed as # are not allowed to be nested: "repeatedly rows #(vec...(..#..))"
