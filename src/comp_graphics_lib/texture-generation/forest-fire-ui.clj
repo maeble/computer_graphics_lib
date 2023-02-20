@@ -16,10 +16,11 @@
          :barren-key barren-key 
          :barren-color barren-color}))
 
-(defn get-rectangle [row col color]
+(defn get-rectangle [row col color] 
+  (println "#")
   {:fx/type :rectangle
-   :width 5
-   :height 5
+   :width 15
+   :height 15
    :grid-pane/row (inc row)
    :grid-pane/column (inc col)
    :fill color}
@@ -51,6 +52,7 @@
                     matrix forest-key forest-color
                     fire-key fire-color
                     barren-key barren-color]}]
+  (println "root: create window, map, etc")
   {:fx/type :stage
    :showing true
    :title title
@@ -71,31 +73,10 @@
 ;; Create renderer with middleware that maps incoming data - description -
 ;; to component description that can be used to render JavaFX state.
 ;; Here description is just passed as an argument to function component.
-(def renderer
+
+(defn renderer []
   (fx/create-renderer
    :middleware (fx/wrap-map-desc assoc :fx/type root)))
 
-;; TESTING
-(def matrix [[2 2 2 ]
-             [2 2 1 ]
-             [2 0 0 ]])
-
-(def big-test-mat
-  [[2 2 2 2 2 2 2 2 2 2]
-   [2 2 1 2 2 2 2 2 2 2]
-   [2 2 2 2 2 2 2 0 2 2]
-   [2 0 0 2 2 2 2 2 2 2]
-   [2 0 0 2 2 2 2 2 2 2]
-   [2 2 2 2 1 2 2 2 2 2]
-   [2 2 2 2 2 2 2 2 2 2]
-   [2 0 0 2 2 2 2 2 2 2]
-   [2 2 0 2 2 2 1 2 2 2]
-   [2 2 2 2 2 2 2 2 2 2]])
-
-(def *state (get-state "Interactive Forest Fire Demonstration"
-                       big-test-mat
-                       2 :olive
-                       1 :orange
-                       0 :black))
-
-(fx/mount-renderer *state renderer)
+(defn show [*state renderer]
+  (fx/mount-renderer *state renderer))
