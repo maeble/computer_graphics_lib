@@ -17,13 +17,17 @@
 ;;(ff/run-forest-fire-main big-test-mat forest-probability fire-probability number-of-rounds)
 
 ;; ui-based forest fire
+(def renderer (ui/renderer))
+
 (def *state (ui/get-state "Interactive Forest Fire Demonstration"
                           (ff/get-new-random-map map-size map-size forest-weight fire-weight barren-weight)
                           ff/tree :darkolivegreen
                           ff/fire :darkorange
-                          ff/barren :black))
+                          ff/barren :black
+                          (fn [_] (println "click"))
+                          ))
 
-(ui/show *state (ui/renderer))
+(ui/show *state renderer)
 
 (defn -main
   "I don't do a whole lot ... yet."

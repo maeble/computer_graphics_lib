@@ -6,7 +6,9 @@
 (defn get-state [window-title matrix 
                  forest-key forest-color
                  fire-key fire-color
-                 barren-key barren-color]
+                 barren-key barren-color
+                 on-click-next-iteration-button
+                 ]
   (atom {:title window-title
          :matrix matrix
          :forest-key forest-key
@@ -14,10 +16,10 @@
          :fire-key fire-key 
          :fire-color fire-color
          :barren-key barren-key 
-         :barren-color barren-color}))
+         :barren-color barren-color
+         :on-click-next-iteration-button on-click-next-iteration-button}))
 
 (defn get-rectangle [row col color] 
-  (println "#")
   {:fx/type :rectangle
    :width 15
    :height 15
@@ -43,27 +45,36 @@
                            (conj result (get-rectangle row col fire-color)))))]
       (if (mu/has-next-index? mat row col)
         (recur mat ((mu/get-next-index mat row col) :row) ((mu/get-next-index mat row col) :col) new-result)
-        (do (println new-result)
-         new-result))
+        new-result)
         )))
 
 
 (defn root [{:keys [title
                     matrix forest-key forest-color
                     fire-key fire-color
-                    barren-key barren-color]}]
+                    barren-key barren-color
+                    on-click-next-iteration-button
+                    ]}]
   (println "root: create window, map, etc")
   {:fx/type :stage
    :showing true
    :title title
    :scene {:fx/type :scene
            :root {:fx/type :v-box
+                  :alignment :center
+                  :spacing 10.0
                   :children [{:fx/type :label
+                              :style {:-fx-text-fill :black, :-fx-font-weight :bold}
+                              :text ""}
+                             {:fx/type :label
                               :style {:-fx-text-fill :black, :-fx-font-weight :bold}
                               :text "Interactive Texture Generation"}
                              {:fx/type :label
                               :text "This is an interactive demonstration of the forest fire texture generation algorithm."}
-                             {:fx/type :grid-pane
+                             {:fx/type :button
+                              :text ">> next iteration"
+                              :on-action on-click-next-iteration-button}
+                             {:fx/type :grid-pane 
                               :children (matrix-2-map  matrix forest-key forest-color
                                                        fire-key fire-color
                                                        barren-key barren-color)
