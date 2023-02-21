@@ -5,13 +5,13 @@
 
 ;; Configurations
 ;; --------------------------------------------------------------------------------------------
-(def map-size 40)
+(def map-size 80)
 
 (def fire-probability 0.0005)
 (def forest-probability 0.01)
 (def number-of-rounds 3)
 
-(def fire-weight 5)
+(def fire-weight 4)
 (def forest-weight 1000)
 (def barren-weight 25)
 

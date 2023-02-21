@@ -21,8 +21,8 @@
 
 (defn get-rectangle [row col color] 
   {:fx/type :rectangle
-   :width 15
-   :height 15
+   :width 7
+   :height 7
    :grid-pane/row (inc row)
    :grid-pane/column (inc col)
    :fill color}
