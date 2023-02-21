@@ -16,7 +16,7 @@
 (ns comp-graphics-lib.texture-generation.forest-fire
   (:require
    [comp-graphics-lib.texture-generation.map-utils :as map-utils]
-   [clojure.core.match :as match]
+   ;[clojure.core.match :as match]
    ) 
   (:import )
   )
@@ -37,6 +37,12 @@
   (if (= cell tree)
     (> probability (rand))
     false))
+
+(defn catch-fire? [cell num-of-neighbours-on-fire]
+  (if (= cell tree)
+    (> (* (/ num-of-neighbours-on-fire 8) 2.5) (rand))
+    false)
+  )
 
 (defn grow?
   "Returns true if the cell should grow a tree.
@@ -91,14 +97,17 @@
 (defn next-cell-value 
   "Returns the value of the cell of the next map iteration"
   [mat row col  forest-prob fire-prob]
-  (if (= (map-utils/get-cell mat row col) fire)
-    barren ; if burning then barren
-    (if (burn? (map-utils/get-cell mat row col) fire-prob)
-      fire ; else if probably start to burn (if tree inclusive)
-      (if (grow? (map-utils/get-cell mat row col) forest-prob)
-        tree ; else if probably start to grow (if barren inclusive)
-        (map-utils/get-cell mat row col)))) ; else just stay the same
+  (let [cell (map-utils/get-cell mat row col)]
+    (if (= cell fire)
+      barren ; if burning then barren
+      (if (or (burn? cell fire-prob) (catch-fire? cell (how-many-neighbours-on-fire? mat row col)))
+        fire ; else if probably start to burn (if tree inclusive)
+        (if (grow? cell forest-prob)
+          tree ; else if probably start to grow (if barren inclusive)
+          cell))) ; else just stay the same 
+    ) 
   ) 
+
 
 ;; TODO testme
 ;; pattern matching
@@ -118,8 +127,8 @@
 
 (defn transform-cell-in-mat
   "Transformes one cell in the given matrix"
-  [mat row col forest-prob fire-prob] 
-  (assoc mat row (assoc (-> mat (nth row)) col (next-cell-value mat row col forest-prob fire-prob)))
+  [mat new-mat row col forest-prob fire-prob] 
+  (assoc new-mat row (assoc (-> new-mat (nth row)) col (next-cell-value mat row col forest-prob fire-prob)))
   ) ; assoc=replace vector index new_val
 
 ;; (defn transform-mat
@@ -132,14 +141,14 @@
 
 (defn transform-mat-recur
   [matrix first-row first-col forest-prob fire-prob]
-  (loop [mat matrix 
+  (loop [new-mat matrix 
          row first-row 
          col first-col]
-       (if (has-next-index? mat row col)
-         (recur (transform-cell-in-mat mat row col forest-prob fire-prob) ;; transform current cell and get new mat
-                ((map-utils/get-next-index mat row col) :row) ;; next row
-                ((map-utils/get-next-index mat row col) :col)) ;; next col) 
-         (transform-cell-in-mat mat row col forest-prob fire-prob);; last cell
+       (if (map-utils/has-next-index? new-mat row col)
+         (recur (transform-cell-in-mat matrix new-mat row col forest-prob fire-prob) ;; transform current cell and get new mat
+                ((map-utils/get-next-index new-mat row col) :row) ;; next row
+                ((map-utils/get-next-index new-mat row col) :col)) ;; next col) 
+         (transform-cell-in-mat matrix new-mat row col forest-prob fire-prob);; last cell
          )
   ))
 
