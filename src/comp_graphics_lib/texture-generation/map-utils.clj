@@ -11,7 +11,7 @@
   (and (contains? mat row) (contains? (-> mat (nth row)) col)))
 
 
-(defn get-cell
+(defn get-cell-value
   "Returns the content of a map cell at a given index.
    Throws an IndexOutOfBounds exception if the index is invalid"
   [mat row col]
@@ -19,8 +19,8 @@
 
 
 (defn get-data-dict [mat row col]
-  (try {:row row :col col :val (get-cell mat row col)}
-       (catch Exception _ nil)))
+  (try {:row row :col col :val (get-cell-value mat row col)}
+       (catch Exception _ nil))) ;; TODO why exception?
 
 
 (defn get-neighbours
@@ -46,7 +46,6 @@
   [mat row col neighbour]
   ((get-neighbours mat row col) neighbour))
 
-
 (defn get-next-index
   "Iterates row by row and left to right over the map."
   [mat row col]
@@ -62,17 +61,22 @@
   (not (nil? (get-next-index mat row col))))
 
 
-(defn weigted-random [distribution-map]
+(defn weigted-random 
+  "Selects a key from the distribution map via weigted random choice.
+   The distribution map defines for each possible key a distribution weight.
+   "
+  [distribution-map] 
   (let [weights (vals distribution-map)
         total-weight (reduce + weights)
         r (rand total-weight)]
-    (loop [i 0,
-           sum 0]
+    (loop [i 0, sum 0]
       (if (< r (+ (get (vec weights) i) sum))
         (get (vec (keys distribution-map)) i)
         (recur (inc i) (+ (get (vec weights) i) sum))))))
 
 
+;; Note: macro needed for "generate-random-map" as # are not allowed to be nested: 
+;; "repeatedly rows #(vec...(..#..))" throws Exception
 (defmacro repeatedly' [n & body]
   `(repeatedly ~n (fn [] ~@body)))
 
@@ -85,4 +89,3 @@
   [rows, cols, distribution-map] 
   (vec (repeatedly' rows (vec (repeatedly' cols (weigted-random distribution-map))))) 
   )
-;; Note: macro needed as # are not allowed to be nested: "repeatedly rows #(vec...(..#..))"

@@ -36,7 +36,7 @@
          row 0
          col 0
          result []]
-    (let [cell (mu/get-cell mat row col)
+    (let [cell (mu/get-cell-value mat row col)
           new-result (if (= cell barren-key)
                        (conj result (get-rectangle row col barren-color))
                        (if (= cell forest-key)

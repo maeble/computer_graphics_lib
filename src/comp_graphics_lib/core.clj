@@ -8,8 +8,7 @@
 (def map-size 80)
 
 (def fire-probability 0.0005)
-(def forest-probability 0.01)
-(def number-of-rounds 3)
+(def forest-probability 0.02)
 
 (def fire-weight 4)
 (def forest-weight 1000)
@@ -24,7 +23,8 @@
                              ff/tree :darkolivegreen
                              ff/fire :darkorange
                              ff/barren :black
-                             (fn [_] (run-forest-fire-loop fire-probability forest-probability renderer (ff/run-forest-fire-main map forest-probability fire-probability 1))))]
+                             (fn [_] (run-forest-fire-loop fire-probability forest-probability renderer (ff/run-forest-fire-one-round map forest-probability fire-probability)))
+                             )]
     (ui/show *state renderer)))
 
 
@@ -44,4 +44,6 @@
 (defn -main
   "I don't do a whole lot ... yet."
   [& args]
-  (println "Hello, World!"))
+  (run-forest-fire-demo-ui map-size
+                           fire-probability forest-probability
+                           fire-weight forest-weight barren-weight))
