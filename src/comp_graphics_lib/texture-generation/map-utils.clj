@@ -17,11 +17,9 @@
   [mat row col]
   (-> mat (nth row) (nth col)))
 
-
-(defn get-data-dict [mat row col]
-  (try {:row row :col col :val (get-cell-value mat row col)}
-       (catch Exception _ nil))) ;; TODO why exception?
-
+(defn get-cell-info [mat row col]
+  (try [row col (get-cell-value mat row col)]
+    (catch Exception _ nil))) ; if cell invalid, then return nil
 
 (defn get-neighbours
   "Returns a dictionary of data dictionaries of all neighbours for a specific cell.
@@ -30,14 +28,14 @@
    4 x 5
    6 7 8"
   [mat row col]
-  {:1 (get-data-dict mat (dec row) (dec col))
-   :2 (get-data-dict mat (dec row) col)
-   :3 (get-data-dict mat (dec row) (inc col))
-   :4 (get-data-dict mat row (dec col))
-   :5 (get-data-dict mat row (inc col))
-   :6 (get-data-dict mat (inc row) (dec col))
-   :7 (get-data-dict mat (inc row) col)
-   :8 (get-data-dict mat (inc row) (inc col))})
+  {:1 (get-cell-info mat (dec row) (dec col))
+   :2 (get-cell-info mat (dec row) col)
+   :3 (get-cell-info mat (dec row) (inc col))
+   :4 (get-cell-info mat row (dec col))
+   :5 (get-cell-info mat row (inc col))
+   :6 (get-cell-info mat (inc row) (dec col))
+   :7 (get-cell-info mat (inc row) col)
+   :8 (get-cell-info mat (inc row) (inc col))})
 
 
 (defn get-neighbour-of
@@ -46,19 +44,19 @@
   [mat row col neighbour]
   ((get-neighbours mat row col) neighbour))
 
-(defn get-next-index
+(defn get-next-cell
   "Iterates row by row and left to right over the map."
   [mat row col]
   (if (cell-exists? mat row (inc col))
-    (get-data-dict mat row (inc col))
+    (get-cell-info mat row (inc col))
     (if (cell-exists? mat (inc row) 0)
-      (get-data-dict mat (inc row) 0)
+      (get-cell-info mat (inc row) 0)
       nil)))
 
 (defn has-next-index?
   "Returns true if get-next-index can find a next cell"
   [mat row col]
-  (not (nil? (get-next-index mat row col))))
+  (not (nil? (get-next-cell mat row col))))
 
 
 (defn weigted-random 
@@ -67,7 +65,7 @@
    "
   [distribution-map] 
   (let [weights (vals distribution-map)
-        total-weight (reduce + weights)
+        total-weight (reduce + weights) ;; simple reduce
         r (rand total-weight)]
     (loop [i 0, sum 0]
       (if (< r (+ (get (vec weights) i) sum))

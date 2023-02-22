@@ -1,26 +1,9 @@
-;; cellular automation: forest fire model
-;; https://www.mdpi.com/1424-8220/20/4/1135/html#sec2-sensors-20-01135
-
-;; 0 empty - 1 fire - 2 forest
-;; forest-probability (e.g., 0.01): 0 -> 2
-;; fire-probability (e.g., 0.000005): 2 -> 1
-
-;; transformations in each iteration:
-;; 0 -> 2 | forest-probability
-;; 2 -> 1 | fire-probability
-;; fire goes out: 1 -> 0
-;; if a neighbour of forest cell is burning, cell will burn too
-;; -> 2|1 -> 1|0
-;; -> 0|1 -> 0|0
-
 (ns comp-graphics-lib.texture-generation.forest-fire
   (:require
    [comp-graphics-lib.texture-generation.map-utils :as map-utils]
    [clojure.core.match :as match]
    ) 
-  (:import )
   )
-
 
 ;; configurations ========================================
 
@@ -31,8 +14,8 @@
 ;; code ==================================================
 
 (defn burn?
-  "(Randomly) returns true if the cell should start burning .
-   Returns false otherwise."
+  "(Randomly) returns true if the cell should start burning.
+   This refers to the base probability of each forest cell to start burning."
   [cell probability]
   (if (= cell tree)
     (> probability (rand))
@@ -43,13 +26,12 @@
    weighted by the number of burning neighbors."
   [cell num-of-neighbours-on-fire] 
   (if (= cell tree)
-    (> (* (/ num-of-neighbours-on-fire 8) 2.5) (rand))
+    (> (* (/ num-of-neighbours-on-fire 8) 2.5) (rand)) ;; 8 = number of neighbours per cell, 2.5 = weight to make fire more likely in general
     false)
   )
 
 (defn grow?
-  "(Randomly) returns true if the cell should grow a tree.
-   Returns false otherwise."
+  "(Randomly) returns true if the cell should grow a tree."
   [cell probability]
   (if (= cell barren)
     (> probability (rand))
@@ -57,41 +39,54 @@
 
 (defn on-fire? 
   "Returns true, if the given cell contains fire"
-  [cell] 
-  (= cell fire))
+  [cell-value] 
+  (= cell-value fire))
 
 ; Clj can use java functions with .javaFuncName 
-; here just for demonstration - could also use clojure-function "contains?"
+; just for demonstration - could also use clojure-function here
 (defn contains-fire?
-  "Returns true if the map matrix has a burning cell.
-   Returns false otherwise."
+  "Returns true if the map matrix has a burning cell."
   [mat]
   (if (.contains (flatten mat) fire)
     true
     false)
 )
 
-(defn neighbour-on-fire? 
+;; sequential destructuring of neighbor-info
+(defn neighbour-on-fire?
   "Returns true if the neighbour cell of the given key is on fire."
   [mat row col neighb]
-  (if (nil? ((map-utils/get-neighbours mat row col) neighb))
-    false
-    (= (((map-utils/get-neighbours mat row col) neighb) :val) fire)))
+  (let [neighbor-info (map-utils/get-neighbour-of mat row col neighb)]
+    (if (nil? neighbor-info)
+      false
+      (let [[_ _ value] neighbor-info]
+        (on-fire? value))))
+  )
 
-
-(defn how-many-neighbours-on-fire?
+;; with recur
+(defn how-many-neighbours-on-fire?'
  "Returns the number of fires in the neighbour cells.
-  It also works for indices out of scope. This may be useful for algorithms that extend the map/texture area." 
+  It also works for indices out of scope. 
+  This may be useful for an algorithm that extends the map/texture area." 
   [mat row col]
   (if (contains-fire? mat)
    (loop [i 0, fire-sum 0]
-     (if (< i 7)
+     (if (< i 8)
        (if (neighbour-on-fire? mat row col (nth map-utils/neighb-keys i))
          (recur (inc i) (inc fire-sum))
-         (recur (inc i) fire-sum)
-         )
-       fire-sum
-       ))
+         (recur (inc i) fire-sum))
+       fire-sum))
+    0))
+
+;; with reduce: reduce [reduction function] [initial value] [collection to reduce]
+(defn how-many-neighbours-on-fire?
+  "Returns the number of fires in the neighbour cells.
+  It also works for indices out of scope. 
+  This may be useful for an algorithm that extends the map/texture area."
+  [mat row col]
+  (if (contains-fire? mat)
+    (reduce (fn [sum neighb-key] (if (neighbour-on-fire? mat row col neighb-key) (inc sum) sum)) ; anonymous reduction fn
+            0 (keys (map-utils/get-neighbours mat row col)))
     0))
 
 ;; no pattern matching
@@ -114,7 +109,7 @@
     ) 
   ) 
 
-;; pattern matching: way more readable
+;; (simple) pattern matching: way more readable
 (defn next-cell-value
   "Returns the value of the cell of the next map iteration. \n
    Pattern: \n
@@ -154,15 +149,16 @@
          row first-row 
          col first-col]
        (if (map-utils/has-next-index? new-mat row col)
-         (let [next-index (map-utils/get-next-index new-mat row col)]
+         (let [[next-row next-col] (map-utils/get-next-cell new-mat row col)] ;; sequential destructuring
            (recur (transform-cell-in-mat matrix new-mat row col forest-prob fire-prob) ;; transform current cell and get new mat
-                  (next-index :row)
-                  (next-index :col))
+                  next-row
+                  next-col)
            ) 
          (transform-cell-in-mat matrix new-mat row col forest-prob fire-prob);; last cell
          )
   ))
 
+;; wrapper function for 
 (defn run-forest-fire-one-round 
   "Runs the forest fire map transformation for one iteration and returns the resulting map."
   [matrix forest-probability fire-probability]

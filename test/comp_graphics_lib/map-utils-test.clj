@@ -23,9 +23,9 @@
 (cell-exists?-test)
 
 (deftest get-cell-test
-  (testing "cell exists" (is (= 2 (mu/get-cell test-mat-1 2 2))))
-  (testing "invalid row index" (is (thrown? IndexOutOfBoundsException (mu/get-cell test-mat-1 -1 0))))
-  (testing "invalid column index" (is (thrown? IndexOutOfBoundsException (mu/get-cell test-mat-1 0 -1))))
+  (testing "cell exists" (is (= 2 (mu/get-cell-value test-mat-1 2 2))))
+  (testing "invalid row index" (is (thrown? IndexOutOfBoundsException (mu/get-cell-value test-mat-1 -1 0))))
+  (testing "invalid column index" (is (thrown? IndexOutOfBoundsException (mu/get-cell-value test-mat-1 0 -1))))
   )
 
 (get-cell-test)

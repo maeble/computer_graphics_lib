@@ -43,12 +43,21 @@
   )
 (has-next-index?-test)
 
+
 (deftest how-many-neighbours-on-fire?-test
-  (testing "invalid, off-map cell" (is (= 2 (ff/how-many-neighbours-on-fire? test-mat-2 -1 1))))
+  (testing "invalid, off-map cell" (is (= 3 (ff/how-many-neighbours-on-fire? test-mat-2 1 -1))))
+  (testing "invalid, off-map cell" (is (= 3 (ff/how-many-neighbours-on-fire? test-mat-2 -1 1))))
   (testing "no neighbours on fire" (is (= 0 (ff/how-many-neighbours-on-fire? test-mat-2 2 2))))
-  (testing "neighbours on fire" (is (= 5 (ff/how-many-neighbours-on-fire? test-mat-2 1 1))))
-  )
+  (testing "neighbours on fire" (is (= 5 (ff/how-many-neighbours-on-fire? test-mat-2 1 1)))))
 (how-many-neighbours-on-fire?-test)
+
+(deftest how-many-neighbours-on-fire?'-test
+  (testing "invalid, off-map cell" (is (= 3 (ff/how-many-neighbours-on-fire?' test-mat-2 1 -1))))
+  (testing "invalid, off-map cell" (is (= 3 (ff/how-many-neighbours-on-fire?' test-mat-2 -1 1))))
+  (testing "no neighbours on fire" (is (= 0 (ff/how-many-neighbours-on-fire?' test-mat-2 2 2))))
+  (testing "neighbours on fire" (is (= 5 (ff/how-many-neighbours-on-fire?' test-mat-2 1 1))))
+  )
+(how-many-neighbours-on-fire?'-test)
 
 (deftest next-cell-value-test
   (testing "fire" (is (= 0 (ff/next-cell-value test-mat-2 0 0))))

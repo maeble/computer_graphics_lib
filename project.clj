@@ -6,6 +6,7 @@
   :resource-paths ["resources/humbleui-0.0.0.jar"]
   :dependencies [[org.clojure/clojure "1.10.0"]
                  [cljfx "1.7.22"] 
+                 [org.clojure/core.match "1.0.1"]
                  ] 
   :main ^:skip-aot comp-graphics-lib.core
   :target-path "target/%s"

@@ -1,6 +1,7 @@
 (ns comp-graphics-lib.texture-generation.forest-fire-ui
   (:require [cljfx.api :as fx]
-            [comp-graphics-lib.texture-generation.map-utils :as mu]))
+            [comp-graphics-lib.texture-generation.map-utils :as mu]
+            [clojure.core.match :as match]))
 
 ;; Define application state
 (defn get-state [window-title matrix 
@@ -17,7 +18,7 @@
          :fire-color fire-color
          :barren-key barren-key 
          :barren-color barren-color
-         :on-click-next-iteration-button on-click-next-iteration-button}))
+         :on-click-next-iteration-button on-click-next-iteration-button})) 
 
 (defn get-rectangle [row col color] 
   {:fx/type :rectangle
@@ -32,19 +33,15 @@
                     forest-key forest-color
                     fire-key fire-color
                     barren-key barren-color]
-  (loop [mat matrix
-         row 0
-         col 0
-         result []]
-    (let [cell (mu/get-cell-value mat row col)
-          new-result (if (= cell barren-key)
-                       (conj result (get-rectangle row col barren-color))
-                       (if (= cell forest-key)
-                         (conj result (get-rectangle row col forest-color))
-                         (if (= cell fire-key)
-                           (conj result (get-rectangle row col fire-color)))))]
+  (loop [mat matrix, row 0, col 0, result []]
+    (let [cell-value (mu/get-cell-value mat row col)
+          new-result (match/match [cell-value] ;; simple pattern matching
+                       [barren-key] (conj result (get-rectangle row col barren-color))
+                       [forest-key] (conj result (get-rectangle row col forest-color))
+                       [fire-key] (conj result (get-rectangle row col fire-color)))]
       (if (mu/has-next-index? mat row col)
-        (recur mat ((mu/get-next-index mat row col) :row) ((mu/get-next-index mat row col) :col) new-result)
+        (let [[next-row next-col] (mu/get-next-cell mat row col)] ;; seq destructuring
+          (recur mat next-row next-col new-result))
         new-result)
         )))
 
@@ -54,7 +51,7 @@
                     fire-key fire-color
                     barren-key barren-color
                     on-click-next-iteration-button
-                    ]}]
+                    ]}] ;; uses associative destructuring of the atom dictionary of *state
   (println "root: create window, map, etc")
   {:fx/type :stage
    :showing true
@@ -80,10 +77,6 @@
                                                        barren-key barren-color)
                               }
                              ]}}})
-
-;; Create renderer with middleware that maps incoming data - description -
-;; to component description that can be used to render JavaFX state.
-;; Here description is just passed as an argument to function component.
 
 (defn renderer []
   (fx/create-renderer
