@@ -35,10 +35,6 @@ Build with `Leiningen`
 Run:
     $ java -jar comp-graphics-lib-0.1.0-standalone.jar [args]
 
-## Options
+## Contents and more information
 
-...
-
-## Examples
-
-...
+[>> see docs](doc/intro.md)
