@@ -1,7 +1,8 @@
-(ns comp-graphics-lib.core
+(ns comp_graphics_lib.core
   (:gen-class)
-  (:require [comp-graphics-lib.texture-generation.forest-fire :as ff]
-            [comp-graphics-lib.texture-generation.forest-fire-ui :as ui]))
+  (:require [comp_graphics_lib.texture_generation.forest_fire :as ff]
+            [comp_graphics_lib.texture_generation.forest_fire_ui :as ui])
+  )
 
 ;; Configurations
 ;; --------------------------------------------------------------------------------------------
@@ -35,15 +36,18 @@
                         (ui/renderer) (ff/get-new-random-map map-size map-size forest-weight fire-weight barren-weight)) 
   ) ;; Note: recur was not possible here, as surrounding macro contained loop and I could not reach my own loop
 
-
- (run-forest-fire-demo-ui map-size
-                          fire-probability forest-probability
-                          fire-weight forest-weight barren-weight)
+;; RUN (REPL)
+;;  (run-forest-fire-demo-ui map-size
+;;                           fire-probability forest-probability
+;;                           fire-weight forest-weight barren-weight)
 
 
 (defn -main
-  "I don't do a whole lot ... yet."
+  "Run the forest-fire algorithm"
   [& args]
+  ;; (Platform/setImplicitExit true) (:import [javafx.application Platform]))
+  (println "Run Forest Fire")
   (run-forest-fire-demo-ui map-size
                            fire-probability forest-probability
-                           fire-weight forest-weight barren-weight))
+                           fire-weight forest-weight barren-weight)
+  )

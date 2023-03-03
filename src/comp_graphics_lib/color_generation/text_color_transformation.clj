@@ -1,4 +1,4 @@
-(ns comp-graphics-lib.color-generation.text-color-transformation)
+(ns comp_graphics_lib.color_generation.text_color_transformation)
 
 
 (defn char-to-color-number 

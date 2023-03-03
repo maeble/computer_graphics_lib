@@ -2,7 +2,7 @@
   (:require [clojure.test :refer :all]
             [comp-graphics-lib.core :refer :all]
             [comp-graphics-lib.texture-generation.map-utils :as mu]
-            [comp-graphics-lib.texture-generation.forest-fire :as ff]))
+            [comp_graphics_lib.texture_generation.forest_fire :as ff]))
 
 (def test-mat-1 [[ff/tree ff/tree ff/tree]
                  [ff/tree ff/fire ff/tree]

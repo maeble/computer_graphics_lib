@@ -1,9 +1,8 @@
-(ns comp-graphics-lib.color-generation.text-to-color-ui
+(ns comp_graphics_lib.color_generation.text_to_color_ui
   (:require [cljfx.api :as fx]
-            [comp-graphics-lib.texture-generation.map-utils :as mu]
-            [comp-graphics-lib.color-generation.text-color-transformation :as text2color]
-            )
-  )
+            [comp_graphics_lib.texture_generation.map_utils :as mu]
+            [comp_graphics_lib.color_generation.text_color_transformation :as text2color]
+            ))
 
 (defn rgb-2-hexadezimal [rgb-vec]
   (let [[r g b] rgb-vec]
@@ -21,11 +20,7 @@
    :height 15
    :grid-pane/row (inc row)
    :grid-pane/column (inc col)
-   :fill (rgb-2-hexadezimal color)
-   })
-
-;(get-rectangle 0 0 [0 0 0])
-
+   :fill (rgb-2-hexadezimal color)})
 
 (defn matrix-2-map [matrix]
   (loop [mat matrix, row 0, col 0, result []]
@@ -39,8 +34,7 @@
 
 (defn root [{:keys [title
                     matrix
-                    on-click-generate-button
-                    ]}] ;; uses associative destructuring of the atom dictionary of *state
+                    on-click-generate-button]}] ;; uses associative destructuring of the atom dictionary of *state
   (println "root: create window, map, etc")
   {:fx/type :stage
    :showing true
@@ -54,19 +48,21 @@
                               :text ""}
                              {:fx/type :label
                               :style {:-fx-text-fill :black, :-fx-font-weight :bold}
-                              :text "    Interactive Text to Texture Generation    "}
-                             {:fx/type :label
-                              :text "Enter a text and generate a texture."}
-                             {:fx/type :button
-                              :text ">> Generate texture"
-                              :on-action on-click-generate-button} 
+                              :text "    Text to Texture Generation    "}
+                            ;;  {:fx/type :label
+                            ;;   :style {:-fx-text-fill :black, :-fx-font-weight :bold}
+                            ;;   :text "    Interactive Text to Texture Generation    "}
+                            ;;  {:fx/type :label
+                            ;;   :text "Enter a text and generate a texture."}
+                            ;;  {:fx/type :button
+                            ;;   :text ">> Generate texture"
+                            ;;   :on-action on-click-generate-button} 
                              {:fx/type :grid-pane
                               :alignment :center
                               :children (matrix-2-map  matrix)}
                              {:fx/type :label
                               :style {:-fx-text-fill :black, :-fx-font-weight :bold}
-                              :text ""}
-                             ]}}})
+                              :text ""}]}}})
 
 (defn renderer []
   (fx/create-renderer
@@ -75,10 +71,10 @@
 (defn show [*state renderer]
   (fx/mount-renderer *state renderer))
 
-(def texture-mat (text2color/strings-to-texture-map "num is used to coerce a primitive Java number type such as int, float, long, double, etc., into its boxed version such as Float, Long, Double, etc. If given an existing boxed Number type, as opposed to a primitive number type, it will just return it as is."))
 
+;; RUN (REPL)
+;; Note: not integrated yet in core / lein run
 
-;; RUN
-
-(show (get-state "Text to color map generation" texture-mat (fn [_] (prn "click"))) 
-      (renderer))
+;; (def texture-mat (text2color/strings-to-texture-map "num is used to coerce a primitive Java number type such as int, float, long, double, etc., into its boxed version such as Float, Long, Double, etc. If given an existing boxed Number type, as opposed to a primitive number type, it will just return it as is."))
+;; (show (get-state "Text to color map generation" texture-mat (fn [_] (prn "click")))
+;;       (renderer))

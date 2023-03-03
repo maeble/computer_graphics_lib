@@ -1,4 +1,4 @@
-(ns comp-graphics-lib.texture-generation.map-utils)
+(ns comp_graphics_lib.texture_generation.map_utils)
 
 
 (def neighb-keys (list :1 :2 :3 :4 :5 :6 :7 :8))

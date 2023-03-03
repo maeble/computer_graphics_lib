@@ -1,6 +1,6 @@
-(ns comp-graphics-lib.texture-generation.forest-fire
+(ns comp_graphics_lib.texture_generation.forest_fire
   (:require
-   [comp-graphics-lib.texture-generation.map-utils :as map-utils]
+   [comp_graphics_lib.texture_generation.map_utils :as map-utils]
    [clojure.core.match :as match]
    ) 
   )

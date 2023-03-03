@@ -1,6 +1,6 @@
-(ns comp-graphics-lib.texture-generation.forest-fire-ui
+(ns comp_graphics_lib.texture_generation.forest_fire_ui
   (:require [cljfx.api :as fx]
-            [comp-graphics-lib.texture-generation.map-utils :as mu]
+            [comp_graphics_lib.texture_generation.map_utils :as mu]
             [clojure.core.match :as match]))
 
 ;; Define application state
