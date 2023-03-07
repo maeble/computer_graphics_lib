@@ -2,6 +2,7 @@
   (:gen-class)
   (:require [comp_graphics_lib.texture_generation.forest_fire :as ff]
             [comp_graphics_lib.texture_generation.forest_fire_ui :as ui])
+  (:import [javafx.application Platform])
   )
 
 ;; Configurations
@@ -45,7 +46,7 @@
 (defn -main
   "Run the forest-fire algorithm"
   [& args]
-  ;; (Platform/setImplicitExit true) (:import [javafx.application Platform]))
+  (Platform/setImplicitExit true)
   (println "Run Forest Fire")
   (run-forest-fire-demo-ui map-size
                            fire-probability forest-probability

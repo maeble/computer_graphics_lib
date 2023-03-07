@@ -1,7 +1,6 @@
 (ns comp-graphics-lib.map-utils-test
   (:require [clojure.test :refer :all]
-            [comp-graphics-lib.core :refer :all]
-            [comp-graphics-lib.texture-generation.map-utils :as mu]
+            [comp_graphics_lib.texture_generation.map_utils :as mu]
             [comp_graphics_lib.texture_generation.forest_fire :as ff]))
 
 (def test-mat-1 [[ff/tree ff/tree ff/tree]
@@ -30,35 +29,26 @@
 
 (get-cell-test)
 
-;; TODO
-;; (deftest get-data-dict-test
-;;   (testing "" (is ())))
-;; ;; TESTS
-;; (mu/get-data-dict test-mat-1 0 0) ; dict
-;; (mu/get-data-dict test-mat-1 -1 0) ; nil
+(deftest has-next-index?-test
+  (testing "" (is (true? (mu/has-next-index? test-mat-1 0 0))))
+  (testing "" (is (true? (mu/has-next-index? test-mat-1 1 2))))
+  (testing "" (is (false? (mu/has-next-index? test-mat-1 2 2)))))
+(has-next-index?-test)
 
-;; (deftest get-neighbours-test
-;;   (testing "" (is ())))
-;; ;; TESTS
-;; (mu/get-neighbours test-map-neighbours 1 1) ; valid: all
-;; (mu/get-neighbours test-map-neighbours 0 0) ; valid: 5,7,8
 
-;; (deftest get-neighbour-of-test
-;;   (testing "" (is ())))
-;; ;; TESTS
-;; (mu/get-neighbour-of test-map-neighbours 1 1 :1) ; :val=1
-;; (mu/get-neighbour-of test-map-neighbours 1 1 :2) ; :val=2
-;; (mu/get-neighbour-of test-map-neighbours 1 1 :3) ; :val=3
-;; (mu/get-neighbour-of test-map-neighbours 1 1 :4) ; :val=4
-;; (mu/get-neighbour-of test-map-neighbours 1 1 :5) ; :val=5
-;; (mu/get-neighbour-of test-map-neighbours 1 1 :6) ; :val=6
-;; (mu/get-neighbour-of test-map-neighbours 1 1 :7) ; :val=7 
-;; (mu/get-neighbour-of test-map-neighbours 1 1 :8) ; :val=8
-;; (mu/get-neighbour-of test-map-neighbours 0 0 :1) ; nil
+(deftest get-data-dict-test
+  (testing "normal" (is (false? (nil? (mu/get-cell-info test-mat-1 0 0)))))
+  (testing "normal" (is (true? (nil? (mu/get-cell-info test-mat-1 -1 0)))))
+  )
 
-;; (deftest get-next-index-test
-;;   (testing "" (is ())))
-;; ;; TESTS
-;; (mu/get-next-index test-mat-1 0 0) ; mat 0 1
-;; (mu/get-next-index test-mat-1 0 2) ; mat 1 0
-;; (mu/get-next-index test-mat-1 2 2) ; nil
+(deftest get-neighbour-of-test
+  (let [[_ _ val] (mu/get-neighbour-of test-map-neighbours 1 1 :1)] (testing "1" (is (= 1 val))))
+  (let [[_ _ val] (mu/get-neighbour-of test-map-neighbours 1 1 :2)] (testing "2" (is (= 2 val))))
+  (let [[_ _ val] (mu/get-neighbour-of test-map-neighbours 1 1 :3)] (testing "3" (is (= 3 val))))
+  (let [[_ _ val] (mu/get-neighbour-of test-map-neighbours 1 1 :4)] (testing "4" (is (= 4 val))))
+  (let [[_ _ val] (mu/get-neighbour-of test-map-neighbours 1 1 :5)] (testing "5" (is (= 5 val))))
+  (let [[_ _ val] (mu/get-neighbour-of test-map-neighbours 1 1 :6)] (testing "6" (is (= 6 val))))
+  (let [[_ _ val] (mu/get-neighbour-of test-map-neighbours 1 1 :7)] (testing "7" (is (= 7 val))))
+  (let [[_ _ val] (mu/get-neighbour-of test-map-neighbours 1 1 :8)] (testing "8" (is (= 8 val))))
+  (let [[_ _ val] (mu/get-neighbour-of test-map-neighbours 0 0 :1)] (testing "nil" (is (nil? val))))
+  )

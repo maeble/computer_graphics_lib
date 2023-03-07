@@ -1,6 +1,5 @@
-(ns comp-graphics-lib.forest-fire-test
+(ns comp_graphics_lib.forest_fire_test
   (:require [clojure.test :refer :all]
-            [comp-graphics-lib.core :refer :all]
             [comp_graphics_lib.texture_generation.forest_fire :as ff]))
 
 (def test-mat-1 [[ff/tree ff/tree ff/tree]
@@ -36,13 +35,6 @@
   )
 (neighbour-on-fire?-test)
 
-(deftest has-next-index?-test
-  (testing "" (is (true? (ff/has-next-index? test-mat-1 0 0))))
-  (testing "" (is (true? (ff/has-next-index? test-mat-1 1 2))))
-  (testing "" (is (false? (ff/has-next-index? test-mat-1 2 2))))
-  )
-(has-next-index?-test)
-
 
 (deftest how-many-neighbours-on-fire?-test
   (testing "invalid, off-map cell" (is (= 3 (ff/how-many-neighbours-on-fire? test-mat-2 1 -1))))
@@ -60,11 +52,11 @@
 (how-many-neighbours-on-fire?'-test)
 
 (deftest next-cell-value-test
-  (testing "fire" (is (= 0 (ff/next-cell-value test-mat-2 0 0))))
-  (testing "barren" (is (or (= 0 (ff/next-cell-value test-mat-2 1 1))
-                            (is (= 2 (ff/next-cell-value test-mat-2 1 1))))))
-  (testing "tree" (is (or (= 1 (ff/next-cell-value test-mat-2 2 1))
-                          (= 2 (ff/next-cell-value test-mat-2 2 1))))))
+  (testing "fire" (is (= 0 (ff/next-cell-value test-mat-2 0 0 0.05 0.05))))
+  (testing "barren" (is (or (= 0 (ff/next-cell-value test-mat-2 1 1 0.05 0.05))
+                            (is (= 2 (ff/next-cell-value test-mat-2 1 1 0.05 0.05))))))
+  (testing "tree" (is (or (= 1 (ff/next-cell-value test-mat-2 2 1 0.05 0.05))
+                          (= 2 (ff/next-cell-value test-mat-2 2 1 0.05 0.05))))))
 (next-cell-value-test)
 
 ;; (deftest -test
