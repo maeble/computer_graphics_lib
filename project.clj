@@ -12,13 +12,14 @@
   :target-path "target/%s"
   :profiles {:uberjar
              {:aot :all
-              :injections [(javafx.application.Platform/exit)]}}
+              :injections [(javafx.application.Platform/exit)
+                           (prn "Done")]}}
   :test-path "test/comp_graphics_lib"
   ;; :jvm-opts ["-Dcljfx.skip-javafx-initialization=true"]
   :prep-tasks [["compile" "comp_graphics_lib.texture_generation.map_utils"]
                ["compile" "comp_graphics_lib.texture_generation.forest_fire"]
                ["compile" "comp_graphics_lib.texture_generation.forest_fire_ui"]
-              ;;  ["compile" "comp_graphics_lib.color_generation.text_color_transformation"]
+               ["compile" "comp_graphics_lib.color_generation.text_color_transformation"]
               ;;  ["compile" "comp_graphics_lib.color_generation.text_to_color_ui"]
                ["compile" "comp_graphics_lib.core"]
                ["javac"]])
