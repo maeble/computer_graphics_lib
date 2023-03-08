@@ -1,13 +1,14 @@
-(ns comp_graphics_lib.color_generation.text_color_transformation)
+(ns comp_graphics_lib.color_generation.text_color_transformation
+  (:require [clojure.core.async :as async]))
 
+(defn transform-char-to-color-number [c color-range modulo-cut]
+  (int (* (mod (int c) modulo-cut) (/ (dec color-range) (dec modulo-cut)))))
 
-(defn char-to-color-number 
+(defn char-to-color-number ; produces a very colorful map
   "Transforms a char to an ascii value. It does not just take the ascii integer value associated with the char, 
    but tries to map chars a litte bit more randomly to the rgb color numeric range (0:255)."
   [c]
-  (let [color-range 256
-        modulo-cut 111]
-    (int (* (mod (int c) modulo-cut) (/ (dec color-range) (dec modulo-cut))))))
+  (transform-char-to-color-number c 256 111))
 ; at first I set the modulo-cut to 256 because it is both the ascii and the color range. 
 ; but because all texts would average now ton appriximately the same color in different shades,
 ; I decided to change the modulo border to approximately the center of the small characters and scale it up
@@ -15,18 +16,44 @@
 ; For this, I would need to hash the string. But this would make the algorithm much simpler and I would not 
 ; be able to try out all this functional programming techniques
 
-(defn take-pruned-average 
+
+(defn char-to-color-number' ; produces a rather dirty-colored, grey map; the more straightforward/less randomized approach
+  [c]
+   (transform-char-to-color-number c 256 256))
+
+
+(defmacro within [range-expr] ; a < x < b 
+  (list `and
+        (list (second range-expr) (first range-expr) (nth range-expr 2)) ; < a x
+        (list (nth range-expr 3) (nth range-expr 2) (nth range-expr 4)) ; < x b
+        ))
+
+(defn filter-chars' [values] ;; filter
+  (filter (fn [x] (within (97 <= (int x) < 123))) values))
+
+
+(defn modify-char-list [chars] ;; does not change the resulting map a lot, of course. Just for demonstration.
+  (map #(%1 %2)  ; % refers to an argument for the anonymous function literal, defined with the dispatch/reader macro #(...)
+       (cycle [inc identity dec]) (map int chars)) ; cycle returns infinite lazy sequence of the items (in this case inc, identity and dec)
+  )
+
+(defn preprocess-string [text]
+  (apply str
+         (-> text .toLowerCase char-array filter-chars' to-array) ; lazy sequence
+         ))
+
+(defn take-pruned-average
   "Takes the average of all values and casts it to an integer."
   [& value-list]
   (let [all (apply concat value-list)]
     (int (/ (reduce + all) (count all))))) ; for the + operation, apply and reduce are equivalent btw 
 
-(defn transpose 
+(defn transpose
   "Transposes a matrix."
   [coll]
   (apply map vector coll))
 
-(defn round-up 
+(defn round-up
   "Always rounds up decimal values."
   [d]
   (let [delta (- d (int d))]
@@ -44,11 +71,11 @@
       (vec (concat token (vec (repeat (- n (count token)) (last token)))))
       token)))
 
-(defn reshape 
+(defn reshape
   "Reshapes a flatten, non-empty vector v. 
    The items per row are defined by the integer x.
    The number of rows is then determinated by the number of items in v."
-  [v x] 
+  [v x]
   (loop [data v
          resmat []]
     (let [remaining (take-last (- (count data) x) data)
@@ -58,30 +85,35 @@
         iter-res))))
 
 
-(defn reshape-to-texture-map 
+(defn reshape-to-texture-map
   "Reshape the rgb-list to a matrix that is as square as possible."
   [rgb-list]
   (let [x (round-up (Math/sqrt (count rgb-list)))]
     (reshape rgb-list x)))
 
 
-(defn strings-to-color-nums 
+(defn strings-to-color-nums
   "Text is transformed to a vector of color numbers."
-  [& text] 
+  [& text]
   (let [entire-text (apply str text)]
-    (vec (for [c (char-array entire-text)] (char-to-color-number c)))) ;; doseq is less appropriate here as it returns nil, but for returns a lazy sequence 
+    (vec (for [c (modify-char-list (char-array entire-text))] (char-to-color-number' c)))) ;; doseq is less appropriate here as it returns nil, but for returns a lazy sequence 
   )
 
 (def average-color-values ; adds to all color numbers the base color number 255
   (partial take-pruned-average [255]) ; with base value 255
   )
 
-(defn get-average-rgb 
+(defn average-color-values' ; the same with unquote splicing
+  [values]
+  (take-pruned-average `[255 ~@values]) ; 
+  )
+
+(defn get-average-rgb
   "Calculates the average rgb-value."
   [r-vals,g-vals,b-vals]
   [(average-color-values r-vals) (average-color-values g-vals) (average-color-values b-vals)])
 
-(defn number-color-transform 
+(defn number-color-transform
   "Takes 3 sequential numbers as one rgb triple. 
    The color-collection-fn function defines, how all rgb triples shall be treated and returned (averaged, listed, etc)."
   [numbers, color-collection-fn]
@@ -101,7 +133,7 @@
   (number-color-transform coll get-average-rgb))
 
 
-(defn get-rgb-values 
+(defn get-rgb-values
   "Collects all rgb values in a list."
   [r-vals,g-vals,b-vals]
   (map (fn [r g b] [r g b]) r-vals g-vals b-vals))
@@ -115,25 +147,24 @@
   [coll]
   (number-color-transform coll get-rgb-values))
 
-(def strings-to-color 
+(def strings-to-color
   (comp numbers-to-color strings-to-color-nums)) ; composition 
 
 (def strings-to-colors
   (comp numbers-to-colors strings-to-color-nums)) ; composition 
 
 (def strings-to-texture-map
-  (comp reshape-to-texture-map strings-to-colors)
-  )
+  (comp reshape-to-texture-map strings-to-colors))
 
 
 ;; TESTING
+;; (def input_string "num is used to coerce a primitive Java number type such as int, float, long, double, etc., into its boxed version such as Float, Long, Double, etc. If given an existing boxed Number type, as opposed to a primitive number type, it will just return it as is!")
 
-(strings-to-color "nice day here" "nice day it is today")
+;; (strings-to-color input_string)
+;; (strings-to-color (preprocess-string input_string))
 
-(strings-to-color "forest")
-(strings-to-color "fire!")
+;; (strings-to-colors input_string)
+;; (strings-to-colors (preprocess-string input_string))
 
-(strings-to-colors "num is used to coerce a primitive Java number type such as int, float, long, double, etc., into its boxed version such as Float, Long, Double, etc. If given an existing boxed Number type, as opposed to a primitive number type, it will just return it as is.")
-(strings-to-color "num is used to coerce a primitive Java number type such as int, float, long, double, etc., into its boxed version such as Float, Long, Double, etc. If given an existing boxed Number type, as opposed to a primitive number type, it will just return it as is.")
-
-(strings-to-texture-map "num is used to coerce a primitive Java number type such as int, float, long, double, etc., into its boxed version such as Float, Long, Double, etc. If given an existing boxed Number type, as opposed to a primitive number type, it will just return it as is.")
+;; (strings-to-texture-map input_string)
+;; (strings-to-texture-map (preprocess-string input_string))

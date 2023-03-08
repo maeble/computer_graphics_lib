@@ -75,6 +75,8 @@
 ;; RUN (REPL)
 ;; Note: not integrated yet in core / lein run
 
-;; (def texture-mat (text2color/strings-to-texture-map "num is used to coerce a primitive Java number type such as int, float, long, double, etc., into its boxed version such as Float, Long, Double, etc. If given an existing boxed Number type, as opposed to a primitive number type, it will just return it as is."))
+;; (def input-string "num is used to coerce a primitive Java number type such as int, float, long, double, etc., into its boxed version such as Float, Long, Double, etc. If given an existing boxed Number type, as opposed to a primitive number type, it will just return it as is!")
+;; (def texture-mat (text2color/strings-to-texture-map input-string)) 
+;; (def texture-mat' (text2color/strings-to-texture-map (text2color/preprocess-string input-string))) 
 ;; (show (get-state "Text to color map generation" texture-mat (fn [_] (prn "click")))
 ;;       (renderer))
