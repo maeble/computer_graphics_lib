@@ -1,5 +1,7 @@
 (ns comp_graphics_lib.color_generation.text_color_transformation
-  (:require [clojure.core.async :as async]))
+  (:require
+   [clojure.core.async :as async]
+   [comp-graphics-lib.async-help :as ashelp]))
 
 (defn transform-char-to-color-number [c color-range modulo-cut]
   (int (* (mod (int c) modulo-cut) (/ (dec color-range) (dec modulo-cut)))))
@@ -19,7 +21,7 @@
 
 (defn char-to-color-number' ; produces a rather dirty-colored, grey map; the more straightforward/less randomized approach
   [c]
-   (transform-char-to-color-number c 256 256))
+  (transform-char-to-color-number c 256 256))
 
 
 (defmacro within [range-expr] ; a < x < b 
@@ -28,7 +30,7 @@
         (list (nth range-expr 3) (nth range-expr 2) (nth range-expr 4)) ; < x b
         ))
 
-(defn filter-chars' [values] ;; filter
+(defn filter-chars [values] ;; filter
   (filter (fn [x] (within (97 <= (int x) < 123))) values))
 
 
@@ -37,9 +39,19 @@
        (cycle [inc identity dec]) (map int chars)) ; cycle returns infinite lazy sequence of the items (in this case inc, identity and dec)
   )
 
+(defn filter-chars' [values] ;; pipeline implementation of "filter-chars" function
+  (let [thread-count 4
+        out (async/chan 1)
+        in (async/chan 1)]
+    (doseq [i values] (async/put! in i)) ; input
+    (async/pipeline thread-count out (filter (fn [x] (within (97 <= (int x) < 123)))) in)
+    (async/<!! (ashelp/collect-data out))))
+
+;; (filter-chars' [ 1 2 6 100 103 7])
+
 (defn preprocess-string [text]
   (apply str
-         (-> text .toLowerCase char-array filter-chars' to-array) ; lazy sequence
+         (-> text .toLowerCase char-array filter-chars to-array) ; enhance readability by reducing/simplifying nesting 
          ))
 
 (defn take-pruned-average
