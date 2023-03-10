@@ -25,7 +25,7 @@
                              ff/tree :darkolivegreen
                              ff/fire :darkorange
                              ff/barren :black
-                             (fn [_] (run-forest-fire-loop fire-probability forest-probability renderer (ff/run-forest-fire-one-round map forest-probability fire-probability)))
+                             (fn [_] (run-forest-fire-loop fire-probability forest-probability renderer (ff/transform-mat map forest-probability fire-probability)))
                              )]
     (ui/show *state renderer)))
 

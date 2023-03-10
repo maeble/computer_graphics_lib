@@ -1,9 +1,7 @@
-(ns comp_graphics_lib.texture_generation.forest_fire
-  (:require
-   [comp_graphics_lib.texture_generation.map_utils :as map-utils]
-   [clojure.core.match :as match]
-   ) 
-  )
+ (ns comp_graphics_lib.texture_generation.forest_fire
+   (:require
+    [comp_graphics_lib.texture_generation.map_utils :as map-utils]
+    [clojure.core.match :as match]))
 
 ;; configurations ========================================
 
@@ -21,14 +19,13 @@
     (> probability (rand))
     false))
 
-(defn catch-fire? 
+(defn catch-fire?
   "(Randomly) returns true if the cell should start burning, 
    weighted by the number of burning neighbors."
-  [cell num-of-neighbours-on-fire] 
+  [cell num-of-neighbours-on-fire]
   (if (= cell tree)
     (> (* (/ num-of-neighbours-on-fire 8) 2.5) (rand)) ;; 8 = number of neighbours per cell, 2.5 = weight to make fire more likely in general
-    false)
-  )
+    false))
 
 (defn grow?
   "(Randomly) returns true if the cell should grow a tree."
@@ -37,9 +34,9 @@
     (> probability (rand))
     false))
 
-(defn on-fire? 
+(defn on-fire?
   "Returns true, if the given cell contains fire"
-  [cell-value] 
+  [cell-value]
   (= cell-value fire))
 
 ; Clj can use java functions with .javaFuncName 
@@ -49,8 +46,7 @@
   [mat]
   (if (.contains (flatten mat) fire)
     true
-    false)
-)
+    false))
 
 ;; sequential destructuring of neighbor-info
 (defn neighbour-on-fire?
@@ -60,22 +56,21 @@
     (if (nil? neighbor-info)
       false
       (let [[_ _ value] neighbor-info]
-        (on-fire? value))))
-  )
+        (on-fire? value)))))
 
 ;; with recur
 (defn how-many-neighbours-on-fire?'
- "Returns the number of fires in the neighbour cells.
+  "Returns the number of fires in the neighbour cells.
   It also works for indices out of scope. 
-  This may be useful for an algorithm that extends the map/texture area." 
+  This may be useful for an algorithm that extends the map/texture area."
   [mat row col]
   (if (contains-fire? mat)
-   (loop [i 0, fire-sum 0]
-     (if (< i 8)
-       (if (neighbour-on-fire? mat row col (nth map-utils/neighb-keys i))
-         (recur (inc i) (inc fire-sum))
-         (recur (inc i) fire-sum))
-       fire-sum))
+    (loop [i 0, fire-sum 0]
+      (if (< i 8)
+        (if (neighbour-on-fire? mat row col (nth map-utils/neighb-keys i))
+          (recur (inc i) (inc fire-sum))
+          (recur (inc i) fire-sum))
+        fire-sum))
     0))
 
 ;; with reduce: reduce [reduction function] [initial value] [collection to reduce]
@@ -90,7 +85,7 @@
     0))
 
 ;; no pattern matching
-(defn next-cell-value' 
+(defn next-cell-value'
   "Returns the value of the cell of the next map iteration. \n
    Pattern: \n
    0 -> 0 or 2 \n
@@ -106,8 +101,7 @@
         (if (grow? cell forest-prob)
           tree ; else if probably start to grow (if barren inclusive)
           cell))) ; else just stay the same 
-    ) 
-  ) 
+    ))
 
 ;; (simple) pattern matching: way more readable
 (defn next-cell-value
@@ -116,56 +110,49 @@
    0 -> 0 or 2 \n
    1 -> 0 \n
    2 -> 2 or 1 \n
-   "  
+   "
   [mat row col forest-prob fire-prob]
   (let [cell (map-utils/get-cell-value mat row col)
         fire-key fire
         tree-key tree
-        barren-key barren
-        ]
+        barren-key barren]
     (match/match [cell]
       [fire-key] barren
       [barren-key] (if (grow? cell forest-prob)
-                     tree  
-                     cell) 
+                     tree
+                     cell)
       [tree-key] (if (or (burn? cell fire-prob) (catch-fire? cell (how-many-neighbours-on-fire? mat row col)))
-                     fire 
-                     cell) 
-      [other] other
-      ) 
-    ))
+                   fire
+                   cell)
+      [other] other)))
 
 (defn transform-cell-in-mat
   "Transformes one cell in the given matrix"
-  [mat new-mat row col forest-prob fire-prob] 
-  (assoc new-mat row (assoc (-> new-mat (nth row)) col (next-cell-value mat row col forest-prob fire-prob)))
-  ) ; assoc=replace vector index new_val
+  [mat new-mat row col forest-prob fire-prob]
+  (assoc new-mat row (assoc (-> new-mat (nth row)) col (next-cell-value mat row col forest-prob fire-prob)))) ; assoc=replace vector index new_val
 
 
 ;; recursive - could have also been implemented with nested for loop
 (defn transform-mat-recur
   [matrix first-row first-col forest-prob fire-prob]
-  (loop [new-mat matrix 
-         row first-row 
+  (loop [new-mat matrix
+         row first-row
          col first-col]
-       (if (map-utils/has-next-index? new-mat row col)
-         (let [[next-row next-col] (map-utils/get-next-cell new-mat row col)] ;; sequential destructuring
-           (recur (transform-cell-in-mat matrix new-mat row col forest-prob fire-prob) ;; transform current cell and get new mat
-                  next-row
-                  next-col)
-           ) 
-         (transform-cell-in-mat matrix new-mat row col forest-prob fire-prob);; last cell
-         )
-  ))
+    (if (map-utils/has-next-index? new-mat row col)
+      (let [[next-row next-col] (map-utils/get-next-cell new-mat row col)] ;; sequential destructuring
+        (recur (transform-cell-in-mat matrix new-mat row col forest-prob fire-prob) ;; transform current cell and get new mat
+               next-row
+               next-col))
+      (transform-cell-in-mat matrix new-mat row col forest-prob fire-prob);; last cell
+      )))
 
-;; wrapper function for 
-(defn run-forest-fire-one-round 
+;; wrapper function for transform-mat-recur
+(defn transform-mat
   "Runs the forest fire map transformation for one iteration and returns the resulting map."
   [matrix forest-probability fire-probability]
   (transform-mat-recur matrix 0 0 forest-probability fire-probability))
 
 ;; non-pure because of random|probabilistic behaviour
-;; TODO and always wrap deterministic function with probabilistic behaviour function
 (defn run-forest-fire-main
   "Runs the forest fire map transformation for [number-of-rounds] iterations and returns the
    resulting map."
@@ -174,20 +161,18 @@
          forest-prob forest-probability
          fire-prob fire-probability
          rounds number-of-rounds]
-    (let [next-mat (run-forest-fire-one-round mat forest-prob fire-prob)]
+    (let [next-mat (transform-mat mat forest-prob fire-prob)]
       (if (> rounds 1)
         (recur next-mat forest-prob fire-prob (dec rounds))
-        (run-forest-fire-one-round mat forest-prob fire-prob)
-        ))))
+        (transform-mat mat forest-prob fire-prob)))))
 
-(defn get-new-random-map 
+(defn get-new-random-map
   "Returns a new forest fire map with [rows] rows amd [cols] columns.
    The forest-, fire- and barren-weight define how often the values shall appear 
    relatively to the total weight (weighted random distribution).
    "
-  [rows, cols, forest-weight, fire-weight, barren-weight] 
-  (map-utils/generate-random-map rows cols 
-                                 {tree forest-weight, 
+  [rows, cols, forest-weight, fire-weight, barren-weight]
+  (map-utils/generate-random-map rows cols
+                                 {tree forest-weight,
                                   fire fire-weight,
-                                  barren barren-weight
-                                  }))
+                                  barren barren-weight}))

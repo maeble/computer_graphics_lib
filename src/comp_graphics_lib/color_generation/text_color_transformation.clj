@@ -45,9 +45,9 @@
         in (async/chan 1)]
     (doseq [i values] (async/put! in i)) ; input
     (async/pipeline thread-count out (filter (fn [x] (within (97 <= (int x) < 123)))) in)
-    (async/<!! (ashelp/collect-data out))))
+    (async/<!! (ashelp/collect-data out 50))))
 
-;; (filter-chars' [ 1 2 6 100 103 7])
+; (filter-chars' [ 1 2 6 100 103 7])
 
 (defn preprocess-string [text]
   (apply str

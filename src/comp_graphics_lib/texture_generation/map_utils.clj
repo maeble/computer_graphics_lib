@@ -76,7 +76,7 @@
 ;; Note: macro needed for "generate-random-map" as # are not allowed to be nested: 
 ;; "repeatedly rows #(vec...(..#..))" throws Exception
 (defmacro repeatedly' [n & body]
-  `(repeatedly ~n (fn [] ~@body)))
+  `(repeatedly ~n (fn [] ~@body))) ; unquote splicing: ~evaluation, @splicing, takes items in collection seperately
 
 
 (defn generate-random-map 
